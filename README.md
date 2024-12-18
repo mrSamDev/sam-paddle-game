@@ -146,6 +146,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 🔗 Links
 
-- [Live Demo](https://your-demo-link.com)
+- [Live Demo](https://mrsamdev-paddle-game.netlify.app)
 - [Blog Post](https://www.sijosam.in/blog/paddle-game/)
 - [GitHub Repository](https://github.com/mrSamDev/sam-paddle-game)
