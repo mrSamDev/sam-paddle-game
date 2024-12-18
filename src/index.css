@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @layer base {
+  :root {
+    --color-text-main: 0 71 71;
+    --color-bg-main: 236 244 244;
+    --color-bg-muted: 220 235 235;
+    --color-border-main: 0 128 128;
+  }
+  html.dark {
+    --color-text-main: 236 244 244;
+    --color-bg-main: 0 71 71;
+    --color-bg-muted: 0 89 89;
+    --color-border-main: 0 128 128;
+  }
+} */
+
+@layer base {
+  :root {
+    --color-text-main: 236 244 244;
+    --color-bg-main: 0 71 71;
+    --color-bg-muted: 0 89 89;
+    --color-border-main: 0 128 128;
+  }
+}
