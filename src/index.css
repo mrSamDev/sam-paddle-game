@@ -25,3 +25,7 @@
     --color-border-main: 0 128 128;
   }
 }
+
+body {
+  @apply bg-black;
+}

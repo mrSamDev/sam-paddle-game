@@ -1,39 +1,32 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { COLORS, FONTS, GAME_SETTINGS, PARTICLE_SETTINGS } from "./data/config";
+import { BASE_GAME_STATE, COLORS, FONTS, GAME_SETTINGS, PARTICLE_SETTINGS, PARTICLE_TYPES } from "./data/config";
 import type { GameState, Particle, ParticleColors, ParticleEventType, PowerUp, PowerUpType } from "./types";
 
 const CanvasGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const [currentScore, setCurrentScore] = useState(0);
-  const [speedMultiplier, setSpeedMultiplier] = useState(0.5);
-  const [paddleSpeedMultiplier, setPaddleSpeedMultiplier] = useState(2);
+  const [speedMultiplier, setSpeedMultiplier] = useState(GAME_SETTINGS.INITIAL_BALL_SPEED);
+  const [paddleSpeedMultiplier, setPaddleSpeedMultiplier] = useState(GAME_SETTINGS.BASE_PADDLE_SPEED);
   const [isMobile, setIsMobile] = useState(false);
   const requestRef = useRef<number>();
   const keysPressed = useRef<Set<string>>(new Set());
 
-  const gameState = useRef<GameState>({
-    ballX: GAME_SETTINGS.CANVAS.WIDTH / 2,
-    ballY: GAME_SETTINGS.CANVAS.HEIGHT / 2,
-    ballSpeedX: GAME_SETTINGS.INITIAL_BALL_SPEED,
-    ballSpeedY: GAME_SETTINGS.INITIAL_BALL_SPEED,
-    paddleX: GAME_SETTINGS.CANVAS.WIDTH / 2 - GAME_SETTINGS.INITIAL_PADDLE_WIDTH / 2,
-    score: 0,
-    particles: [],
-    powerUps: [],
-    paddleWidth: GAME_SETTINGS.INITIAL_PADDLE_WIDTH,
-    ballSize: GAME_SETTINGS.INITIAL_BALL_SIZE,
-    isPaused: false,
-    isGameOver: false,
-  });
+  // check the fps.md file in info folder for more info
+  const lastTimeRef = useRef<number>(0);
+  const fpsIntervalRef = useRef<number>(1000 / 60);
+  const startTimeRef = useRef<number>(0);
+  const frameCountRef = useRef<number>(0);
+
+  const gameState = useRef<GameState>(BASE_GAME_STATE);
 
   const resetGame = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
 
+    if (!canvas) return;
     gameState.current = {
       ...gameState.current,
-      ballX: canvas.width / 2,
-      ballY: canvas.height / 2,
+      ...BASE_GAME_STATE,
       ballSpeedX: GAME_SETTINGS.INITIAL_BALL_SPEED * speedMultiplier,
       ballSpeedY: GAME_SETTINGS.INITIAL_BALL_SPEED * speedMultiplier,
       paddleX: canvas.width / 2 - GAME_SETTINGS.INITIAL_PADDLE_WIDTH / 2,
@@ -42,7 +35,20 @@ const CanvasGame = () => {
       powerUps: [],
       isGameOver: false,
     };
+
+    console.log("gameState.current: ", gameState.current);
+
     setCurrentScore(0);
+
+    lastTimeRef.current = performance.now();
+    startTimeRef.current = performance.now();
+    frameCountRef.current = 0;
+
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+    }
+
+    requestRef.current = requestAnimationFrame(updateGame);
   }, [speedMultiplier]);
 
   useEffect(() => {
@@ -58,12 +64,15 @@ const CanvasGame = () => {
   const handleSpeedChange = (multiplier: number) => {
     setSpeedMultiplier(multiplier);
     const state = gameState.current;
-    const direction = {
-      x: Math.sign(state.ballSpeedX),
-      y: Math.sign(state.ballSpeedY),
-    };
-    state.ballSpeedX = 5 * direction.x * multiplier;
-    state.ballSpeedY = 5 * direction.y * multiplier;
+
+    const directionX = Math.sign(state.ballSpeedX);
+    const directionY = Math.sign(state.ballSpeedY);
+
+    const ballSpeedX = GAME_SETTINGS.INITIAL_BALL_SPEED * directionX * multiplier;
+    const ballSpeedY = GAME_SETTINGS.INITIAL_BALL_SPEED * directionY * multiplier;
+
+    state.ballSpeedX = ballSpeedX;
+    state.ballSpeedY = ballSpeedY;
   };
 
   const handlePaddleSpeedChange = (multiplier: number) => {
@@ -77,7 +86,6 @@ const CanvasGame = () => {
     if (type === "POWER_UP_COLLECT" && powerUpType) {
       color = COLORS.PARTICLES.POWER_UPS.COLLECT[powerUpType];
     } else {
-      // Type assertion is safe here because we're using a discriminated union
       color = COLORS.PARTICLES[type as keyof Omit<ParticleColors, "POWER_UPS">];
     }
 
@@ -102,7 +110,7 @@ const CanvasGame = () => {
     const type = types[Math.floor(Math.random() * types.length)];
 
     gameState.current.powerUps.push({
-      x: Math.random() * (canvasRef.current?.width || 500 - 20) + 10,
+      x: Math.random() * (canvasRef.current?.width || GAME_SETTINGS.CANVAS.WIDTH - 20) + 10,
       y: 0,
       type,
       speed: 2,
@@ -115,18 +123,18 @@ const CanvasGame = () => {
       const state = gameState.current;
       switch (type) {
         case "wider":
-          state.paddleWidth = Math.min(state.paddleWidth * 1.5, 150);
+          state.paddleWidth = Math.min(state.paddleWidth * GAME_SETTINGS.SPEED_MULTIPLIERS.PADDLE_WIDER, 150);
           break;
         case "smaller":
-          state.paddleWidth = Math.max(state.paddleWidth * 0.75, 40);
+          state.paddleWidth = Math.max(state.paddleWidth * GAME_SETTINGS.SPEED_MULTIPLIERS.PADDLE_SMALLER, 40);
           break;
         case "faster":
-          state.ballSpeedX *= 1.2;
-          state.ballSpeedY *= 1.2;
+          state.ballSpeedX *= GAME_SETTINGS.SPEED_MULTIPLIERS.POWER_UP_FASTER;
+          state.ballSpeedY *= GAME_SETTINGS.SPEED_MULTIPLIERS.POWER_UP_FASTER;
           break;
         case "slower":
-          state.ballSpeedX *= 0.8;
-          state.ballSpeedY *= 0.8;
+          state.ballSpeedX *= GAME_SETTINGS.SPEED_MULTIPLIERS.POWER_UP_SLOWER;
+          state.ballSpeedY *= GAME_SETTINGS.SPEED_MULTIPLIERS.POWER_UP_SLOWER;
           break;
       }
 
@@ -137,7 +145,7 @@ const CanvasGame = () => {
           state.ballSpeedX = state.ballSpeedX > 0 ? 5 * speedMultiplier : -5 * speedMultiplier;
           state.ballSpeedY = state.ballSpeedY > 0 ? 5 * speedMultiplier : -5 * speedMultiplier;
         }
-      }, 5000);
+      }, GAME_SETTINGS.POWER_UP_DURATION);
     },
     [speedMultiplier]
   );
@@ -145,11 +153,16 @@ const CanvasGame = () => {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       keysPressed.current.add(e.code);
+
       if (e.code === "Space") {
         if (gameState.current.isGameOver) {
           resetGame();
         } else {
           gameState.current.isPaused = !gameState.current.isPaused;
+          if (!gameState.current.isPaused) {
+            lastTimeRef.current = performance.now();
+            requestRef.current = requestAnimationFrame(updateGame);
+          }
         }
       }
     },
@@ -162,7 +175,12 @@ const CanvasGame = () => {
 
   const updatePaddlePosition = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas || gameState.current.isPaused) return;
+    if (!canvas || gameState.current.isPaused) {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+      return;
+    }
 
     const currentSpeed = GAME_SETTINGS.BASE_PADDLE_SPEED * paddleSpeedMultiplier;
 
@@ -181,14 +199,36 @@ const CanvasGame = () => {
   }, [paddleSpeedMultiplier]);
 
   const updateGame = useCallback(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
+    const currentTime = performance.now();
+    const elapsed = currentTime - lastTimeRef.current;
 
+    requestRef.current = requestAnimationFrame(updateGame);
+
+    const isTimeLessThanFrameRate = elapsed < fpsIntervalRef.current;
+
+    if (isTimeLessThanFrameRate) {
+      return;
+    }
+
+    const sinceStart = currentTime - startTimeRef.current;
+
+    frameCountRef.current++;
+
+    if (sinceStart > 1000) {
+      startTimeRef.current = currentTime;
+      frameCountRef.current = 0;
+    }
+
+    const delta = elapsed / (1000 / 60);
+    lastTimeRef.current = currentTime - (elapsed % fpsIntervalRef.current);
+
+    const canvas = canvasRef.current;
+    const ctx = ctxRef.current;
+
+    if (!canvas || !ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = COLORS.BACKGROUND;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     const state = gameState.current;
 
     if (state.isPaused) {
@@ -196,48 +236,56 @@ const CanvasGame = () => {
       ctx.fillStyle = COLORS.TEXT;
       ctx.textAlign = "center";
       ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
-      requestRef.current = requestAnimationFrame(updateGame);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
       return;
     }
 
     if (state.isGameOver) {
-      ctx.font = "30px Arial";
+      ctx.font = `${FONTS.SIZES.LARGE} ${FONTS.PRIMARY}`;
       ctx.fillStyle = "white";
       ctx.textAlign = "center";
+      ctx.fillText(String(state.score), canvas.width / 2, canvas.height / 2.5 - 30);
       ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 30);
-      ctx.font = "20px Arial";
+      ctx.font = `${FONTS.SIZES.MEDIUM} ${FONTS.PRIMARY}`;
       ctx.fillText("Press Space to Try Again", canvas.width / 2, canvas.height / 2 + 10);
-      requestRef.current = requestAnimationFrame(updateGame);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
       return;
     }
 
     updatePaddlePosition();
 
-    state.ballX += state.ballSpeedX;
-    state.ballY += state.ballSpeedY;
+    state.ballX += state.ballSpeedX * delta;
+
+    state.ballY += state.ballSpeedY * delta;
 
     const isBallHittingWall = state.ballX > canvas.width - state.ballSize || state.ballX < state.ballSize;
+
     const isBallHittingCeiling = state.ballY < state.ballSize;
-    const isBallInPaddleZone = state.ballY > canvas.height - 30 - state.ballSize;
+
+    const isBallInPaddleZone = state.ballY > canvas.height - (GAME_SETTINGS.PADDLE_BOTTAM_DELTA + GAME_SETTINGS.PADDLE_HEIGHT) - state.ballSize;
+
     const isBallAlignedWithPaddle = state.ballX > state.paddleX && state.ballX < state.paddleX + state.paddleWidth;
+
     const isBallHittingPaddle = isBallInPaddleZone && isBallAlignedWithPaddle;
+
     const isBallBelowPaddle = state.ballY > canvas.height;
+    console.log("isBallBelowPaddle: ", isBallBelowPaddle, structuredClone(state));
 
     if (isBallHittingWall) {
       state.ballSpeedX = -state.ballSpeedX;
-      createParticles(state.ballX, state.ballY, "WALL_COLLISION");
+      createParticles(state.ballX, state.ballY, PARTICLE_TYPES.wallCollision);
     }
 
     if (isBallHittingCeiling) {
       state.ballSpeedY = -state.ballSpeedY;
-      createParticles(state.ballX, state.ballY, "CEILING_COLLISION");
+      createParticles(state.ballX, state.ballY, PARTICLE_TYPES.cellingCollision);
     }
 
     if (isBallHittingPaddle) {
       state.ballSpeedY = -state.ballSpeedY;
       state.score += GAME_SETTINGS.SCORE_INCREMENT;
       setCurrentScore(state.score);
-      createParticles(state.ballX, state.ballY, "PADDLE_COLLISION");
+      createParticles(state.ballX, state.ballY, PARTICLE_TYPES.paddingCollision);
 
       const shouldSpawnPowerUp = Math.random() < 0.2;
       if (shouldSpawnPowerUp) {
@@ -247,12 +295,12 @@ const CanvasGame = () => {
 
     if (isBallBelowPaddle) {
       state.isGameOver = true;
-      createParticles(state.ballX, state.ballY, "GAME_OVER");
+      createParticles(state.ballX, state.ballY, PARTICLE_TYPES.gameOver);
     }
 
     state.particles = state.particles.filter((particle) => {
-      particle.x += particle.speedX;
-      particle.y += particle.speedY;
+      particle.x += particle.speedX * delta;
+      particle.y += particle.speedY * delta;
       particle.life -= 0.02;
 
       if (particle.life > 0) {
@@ -264,11 +312,12 @@ const CanvasGame = () => {
         ctx.globalAlpha = 1;
         return true;
       }
+
       return false;
     });
 
     state.powerUps = state.powerUps.filter((powerUp) => {
-      powerUp.y += powerUp.speed;
+      powerUp.y += powerUp.speed * delta;
 
       const isPowerUpInPaddleZone = powerUp.y > canvas.height - 30;
       const isPowerUpAlignedWithPaddle = powerUp.x > state.paddleX && powerUp.x < state.paddleX + state.paddleWidth;
@@ -276,7 +325,7 @@ const CanvasGame = () => {
 
       if (isPowerUpCollected) {
         applyPowerUp(powerUp.type);
-        createParticles(powerUp.x, powerUp.y, "POWER_UP_COLLECT", powerUp.type);
+        createParticles(powerUp.x, powerUp.y, PARTICLE_TYPES.powerUpCollect, powerUp.type);
         return false;
       }
 
@@ -294,26 +343,33 @@ const CanvasGame = () => {
     ctx.fill();
 
     ctx.fillStyle = COLORS.PADDLE;
-    ctx.fillRect(state.paddleX, canvas.height - 20, state.paddleWidth, 10);
-
-    requestRef.current = requestAnimationFrame(updateGame);
+    ctx.fillRect(state.paddleX, canvas.height - GAME_SETTINGS.PADDLE_BOTTAM_DELTA, state.paddleWidth, GAME_SETTINGS.PADDLE_HEIGHT);
   }, [createParticles, spawnPowerUp, applyPowerUp, updatePaddlePosition]);
 
   useEffect(() => {
     if (!isMobile) {
-      window.addEventListener("keydown", handleKeyDown);
-      window.addEventListener("keyup", handleKeyUp);
+      const canvas = canvasRef.current;
+      if (canvas) ctxRef.current = canvas?.getContext("2d");
+      startTimeRef.current = performance.now();
+      lastTimeRef.current = startTimeRef.current;
       requestRef.current = requestAnimationFrame(updateGame);
     }
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
       if (requestRef.current) {
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [handleKeyDown, handleKeyUp, updateGame, isMobile]);
+  }, [updateGame, isMobile]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [handleKeyDown, handleKeyUp]);
 
   if (isMobile) {
     return (
@@ -344,11 +400,10 @@ const CanvasGame = () => {
       <main className="flex-grow flex flex-col items-center justify-center p-4 pb-20">
         <div className="bg-muted rounded-lg shadow-md p-6 w-full max-w-3xl border border-main/10">
           <div className="flex justify-between items-center mb-6">
-            <div className="text-main">Score: {currentScore}</div>
             <div className="space-y-2">
               <div className="flex gap-2 items-center">
                 <span className="text-main text-sm">Ball Speed:</span>
-                {[0.5, 1, 1.5, 2, 2.5, 3].map((speed) => (
+                {GAME_SETTINGS.BALL_SPEED_OPTIONS.map((speed) => (
                   <button
                     key={speed}
                     onClick={() => handleSpeedChange(speed)}
@@ -360,7 +415,7 @@ const CanvasGame = () => {
               </div>
               <div className="flex gap-2 items-center">
                 <span className="text-main text-sm">Paddle Speed:</span>
-                {[1, 1.5, 2, 2.5, 3].map((speed) => (
+                {GAME_SETTINGS.PADDLE_SPEED_OPTIONS.map((speed) => (
                   <button
                     key={speed}
                     onClick={() => handlePaddleSpeedChange(speed)}
@@ -371,10 +426,15 @@ const CanvasGame = () => {
                 ))}
               </div>
             </div>
+            {/* Add prominent score display */}
+            <div className="text-center">
+              <div className="text-4xl font-bold text-main">{currentScore}</div>
+              <div className="text-sm text-main/60">SCORE</div>
+            </div>
           </div>
 
           <div className="bg-main rounded-lg overflow-hidden border border-main/10">
-            <canvas ref={canvasRef} width={700} height={300} className="w-full" />
+            <canvas tabIndex={0} ref={canvasRef} width={GAME_SETTINGS.CANVAS.WIDTH} height={GAME_SETTINGS.CANVAS.HEIGHT} className="w-full" />
           </div>
 
           <div className="mt-4 space-y-2 text-center text-main prose prose-sijo">
