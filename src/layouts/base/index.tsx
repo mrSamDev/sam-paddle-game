@@ -1,10 +1,6 @@
-import React from "react";
+import { PropsWithChildren } from "react";
 
-interface Props {
-  children: React.ReactNode;
-}
-
-export default function BaseLayout({ children }: Props) {
+export default function BaseLayout({ children }: PropsWithChildren) {
   return (
     <div className="min-h-screen bg-main flex flex-col">
       <header className="w-full py-6 border-b border-main/10">

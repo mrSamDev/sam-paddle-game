@@ -370,7 +370,7 @@ const CanvasGame = () => {
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-main flex items-center justify-center p-4">
+      <div className="bg-main flex items-center justify-center p-4">
         <div className="bg-muted rounded-lg shadow-md p-6 text-center">
           <h1 className="text-2xl font-bold text-main mb-4">Desktop Only Game</h1>
           <p className="text-main">Please open this game on a desktop device for the best experience.</p>
