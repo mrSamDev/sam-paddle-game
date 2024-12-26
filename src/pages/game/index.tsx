@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { BASE_GAME_STATE, COLORS, FONTS, GAME_SETTINGS, PARTICLE_SETTINGS, PARTICLE_TYPES } from "../../data/config";
 import type { GameState, Particle, ParticleColors, ParticleEventType, PowerUp, PowerUpType } from "../../types";
+
+// Target 60 FPS
+const FRAME_TIME = 1000 / 60;
 
 const CanvasGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -11,25 +14,18 @@ const CanvasGame = () => {
   const [isMobile, setIsMobile] = useState(false);
   const requestRef = useRef<number>();
   const keysPressed = useRef<Set<string>>(new Set());
-
-  // check the fps.md file in info folder for more info
-  const lastTimeRef = useRef<number>(0);
-  const fpsIntervalRef = useRef<number>(1000 / 60);
-  const startTimeRef = useRef<number>(0);
-  const frameCountRef = useRef<number>(0);
-
+  const lastFrameTimeRef = useRef<number>(0);
   const gameState = useRef<GameState>(BASE_GAME_STATE);
 
   const resetGame = useCallback(() => {
     const canvas = canvasRef.current;
-
     if (!canvas) return;
+
     gameState.current = {
       ...gameState.current,
       ...BASE_GAME_STATE,
-      ballSpeedX: GAME_SETTINGS.INITIAL_BALL_SPEED * speedMultiplier,
-      ballSpeedY: GAME_SETTINGS.INITIAL_BALL_SPEED * speedMultiplier,
-      paddleX: canvas.width / 2 - GAME_SETTINGS.INITIAL_PADDLE_WIDTH / 2,
+      ballX: GAME_SETTINGS.CANVAS.WIDTH / 2,
+      ballY: GAME_SETTINGS.CANVAS.HEIGHT / 10,
       score: 0,
       paddleWidth: GAME_SETTINGS.INITIAL_PADDLE_WIDTH,
       powerUps: [],
@@ -37,10 +33,7 @@ const CanvasGame = () => {
     };
 
     setCurrentScore(0);
-
-    lastTimeRef.current = performance.now();
-    startTimeRef.current = performance.now();
-    frameCountRef.current = 0;
+    lastFrameTimeRef.current = performance.now();
 
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
@@ -158,7 +151,7 @@ const CanvasGame = () => {
         } else {
           gameState.current.isPaused = !gameState.current.isPaused;
           if (!gameState.current.isPaused) {
-            lastTimeRef.current = performance.now();
+            lastFrameTimeRef.current = performance.now();
             requestRef.current = requestAnimationFrame(updateGame);
           }
         }
@@ -171,54 +164,50 @@ const CanvasGame = () => {
     keysPressed.current.delete(e.code);
   }, []);
 
-  const updatePaddlePosition = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || gameState.current.isPaused) {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
+  const updatePaddlePosition = useCallback(
+    (delta: number) => {
+      const canvas = canvasRef.current;
+      if (!canvas || gameState.current.isPaused) {
+        if (requestRef.current) {
+          cancelAnimationFrame(requestRef.current);
+        }
+        return;
       }
-      return;
-    }
 
-    const currentSpeed = GAME_SETTINGS.BASE_PADDLE_SPEED * paddleSpeedMultiplier;
+      const currentSpeed = GAME_SETTINGS.BASE_PADDLE_SPEED * paddleSpeedMultiplier * delta;
 
-    if (keysPressed.current.has("ArrowLeft")) {
-      gameState.current.paddleX -= currentSpeed;
-    }
-    if (keysPressed.current.has("ArrowRight")) {
-      gameState.current.paddleX += currentSpeed;
-    }
+      if (keysPressed.current.has("ArrowLeft")) {
+        gameState.current.paddleX -= currentSpeed;
+      }
+      if (keysPressed.current.has("ArrowRight")) {
+        gameState.current.paddleX += currentSpeed;
+      }
 
-    const isPaddleHittingLeftWall = gameState.current.paddleX < 0;
-    const isPaddleHittingRightWall = gameState.current.paddleX > canvas.width - gameState.current.paddleWidth;
+      const isPaddleHittingLeftWall = gameState.current.paddleX < 0;
+      const isPaddleHittingRightWall = gameState.current.paddleX > canvas.width - gameState.current.paddleWidth;
 
-    if (isPaddleHittingLeftWall) gameState.current.paddleX = 0;
-    if (isPaddleHittingRightWall) gameState.current.paddleX = canvas.width - gameState.current.paddleWidth;
-  }, [paddleSpeedMultiplier]);
+      if (isPaddleHittingLeftWall) gameState.current.paddleX = 0;
+      if (isPaddleHittingRightWall) gameState.current.paddleX = canvas.width - gameState.current.paddleWidth;
+    },
+    [paddleSpeedMultiplier]
+  );
 
   const updateGame = useCallback(() => {
     const currentTime = performance.now();
-    const elapsed = currentTime - lastTimeRef.current;
+    const elapsed = currentTime - lastFrameTimeRef.current;
 
-    requestRef.current = requestAnimationFrame(updateGame);
-
-    const isTimeLessThanFrameRate = elapsed < fpsIntervalRef.current;
-
-    if (isTimeLessThanFrameRate) {
+    if (elapsed < FRAME_TIME) {
+      // If less than 16.67ms has passed, wait for next frame
+      requestRef.current = requestAnimationFrame(updateGame);
       return;
     }
 
-    const sinceStart = currentTime - startTimeRef.current;
+    // Cap the maximum delta to prevent physics going crazy
+    const maxFrames = 3;
+    const cappedElapsed = Math.min(elapsed, FRAME_TIME * maxFrames);
+    const delta = cappedElapsed / FRAME_TIME;
 
-    frameCountRef.current++;
-
-    if (sinceStart > 1000) {
-      startTimeRef.current = currentTime;
-      frameCountRef.current = 0;
-    }
-
-    const delta = elapsed / (1000 / 60);
-    lastTimeRef.current = currentTime - (elapsed % fpsIntervalRef.current);
+    lastFrameTimeRef.current = currentTime - (elapsed % FRAME_TIME);
 
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
@@ -227,6 +216,7 @@ const CanvasGame = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = COLORS.BACKGROUND;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     const state = gameState.current;
 
     if (state.isPaused) {
@@ -250,22 +240,16 @@ const CanvasGame = () => {
       return;
     }
 
-    updatePaddlePosition();
+    updatePaddlePosition(delta);
 
     state.ballX += state.ballSpeedX * delta;
-
     state.ballY += state.ballSpeedY * delta;
 
     const isBallHittingWall = state.ballX > canvas.width - state.ballSize || state.ballX < state.ballSize;
-
     const isBallHittingCeiling = state.ballY < state.ballSize;
-
     const isBallInPaddleZone = state.ballY > canvas.height - (GAME_SETTINGS.PADDLE_BOTTAM_DELTA + GAME_SETTINGS.PADDLE_HEIGHT) - state.ballSize;
-
     const isBallAlignedWithPaddle = state.ballX > state.paddleX && state.ballX < state.paddleX + state.paddleWidth;
-
     const isBallHittingPaddle = isBallInPaddleZone && isBallAlignedWithPaddle;
-
     const isBallBelowPaddle = state.ballY > canvas.height;
 
     if (isBallHittingWall) {
@@ -295,10 +279,11 @@ const CanvasGame = () => {
       createParticles(state.ballX, state.ballY, PARTICLE_TYPES.gameOver);
     }
 
+    // Update particles with proper delta timing
     state.particles = state.particles.filter((particle) => {
       particle.x += particle.speedX * delta;
       particle.y += particle.speedY * delta;
-      particle.life -= 0.02;
+      particle.life -= 0.02 * delta;
 
       if (particle.life > 0) {
         ctx.beginPath();
@@ -313,6 +298,7 @@ const CanvasGame = () => {
       return false;
     });
 
+    // Update power-ups with proper delta timing
     state.powerUps = state.powerUps.filter((powerUp) => {
       powerUp.y += powerUp.speed * delta;
 
@@ -334,6 +320,7 @@ const CanvasGame = () => {
       return powerUp.y < canvas.height;
     });
 
+    // Draw ball and paddle
     ctx.beginPath();
     ctx.arc(state.ballX, state.ballY, state.ballSize, 0, Math.PI * 2);
     ctx.fillStyle = COLORS.BALL;
@@ -341,14 +328,15 @@ const CanvasGame = () => {
 
     ctx.fillStyle = COLORS.PADDLE;
     ctx.fillRect(state.paddleX, canvas.height - GAME_SETTINGS.PADDLE_BOTTAM_DELTA, state.paddleWidth, GAME_SETTINGS.PADDLE_HEIGHT);
+
+    requestRef.current = requestAnimationFrame(updateGame);
   }, [createParticles, spawnPowerUp, applyPowerUp, updatePaddlePosition]);
 
   useEffect(() => {
     if (!isMobile) {
       const canvas = canvasRef.current;
       if (canvas) ctxRef.current = canvas?.getContext("2d");
-      startTimeRef.current = performance.now();
-      lastTimeRef.current = startTimeRef.current;
+      lastFrameTimeRef.current = performance.now();
       requestRef.current = requestAnimationFrame(updateGame);
     }
 
@@ -410,7 +398,7 @@ const CanvasGame = () => {
               ))}
             </div>
           </div>
-          {/* Add prominent score display */}
+
           <div className="text-center">
             <div className="text-4xl font-bold text-main">{currentScore}</div>
             <div className="text-sm text-main/60">SCORE</div>

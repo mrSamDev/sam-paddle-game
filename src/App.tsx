@@ -1,11 +1,11 @@
 import { Routes, Route } from "react-router";
 import { lazy, Suspense } from "react";
 import BaseLayout from "./layouts/base";
-import AuthGuard from "./components/auth/SignWith";
+// import AuthGuard from "./components/auth/SignWith";
 
 const CanvasGame = lazy(() => import("./pages/game"));
-const LeaderBoard = lazy(() => import("./pages/leaderboard"));
-const Callback = lazy(() => import("./pages/callback"));
+// const LeaderBoard = lazy(() => import("./pages/leaderboard"));
+// const Callback = lazy(() => import("./pages/callback"));
 
 export default function App() {
   return (
@@ -14,12 +14,12 @@ export default function App() {
         <Route
           index
           element={
-            <Suspense fallback={<div>Loading</div>}>
+            <Suspense fallback={<div />}>
               <CanvasGame />
             </Suspense>
           }
         />
-        <Route
+        {/* <Route
           path="leader-board"
           element={
             <Suspense fallback={<div>Loading page</div>}>
@@ -28,15 +28,15 @@ export default function App() {
               </AuthGuard>
             </Suspense>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/:provider/callback"
           element={
             <Suspense fallback={<div>Loading</div>}>
               <Callback />
             </Suspense>
           }
-        />
+        /> */}
       </Routes>
     </BaseLayout>
   );
