@@ -279,23 +279,23 @@ const CanvasGame = () => {
       createParticles(state.ballX, state.ballY, PARTICLE_TYPES.gameOver);
     }
 
-    // state.particles = state.particles.filter((particle) => {
-    //   particle.x += particle.speedX * delta;
-    //   particle.y += particle.speedY * delta;
-    //   particle.life -= 0.02 * delta;
+    state.particles = state.particles.filter((particle) => {
+      particle.x += particle.speedX * delta;
+      particle.y += particle.speedY * delta;
+      particle.life -= 0.02 * delta;
 
-    //   if (particle.life > 0) {
-    //     ctx.beginPath();
-    //     ctx.arc(particle.x, particle.y, particle.life * 3, 0, Math.PI * 2);
-    //     ctx.fillStyle = particle.color;
-    //     ctx.globalAlpha = particle.life;
-    //     ctx.fill();
-    //     ctx.globalAlpha = 1;
-    //     return true;
-    //   }
+      if (particle.life > 0) {
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.life * 3, 0, Math.PI * 2);
+        ctx.fillStyle = particle.color;
+        ctx.globalAlpha = particle.life;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        return true;
+      }
 
-    //   return false;
-    // });
+      return false;
+    });
 
     // Update power-ups with proper delta timing
     // state.powerUps = state.powerUps.filter((powerUp) => {
