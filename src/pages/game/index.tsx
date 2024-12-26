@@ -268,10 +268,10 @@ const CanvasGame = () => {
       setCurrentScore(state.score);
       createParticles(state.ballX, state.ballY, PARTICLE_TYPES.paddingCollision);
 
-      const shouldSpawnPowerUp = Math.random() < 0.2;
-      if (shouldSpawnPowerUp) {
-        spawnPowerUp();
-      }
+      // const shouldSpawnPowerUp = Math.random() < 0.2;
+      // if (shouldSpawnPowerUp) {
+      //   spawnPowerUp();
+      // }
     }
 
     if (isBallBelowPaddle) {
@@ -279,46 +279,45 @@ const CanvasGame = () => {
       createParticles(state.ballX, state.ballY, PARTICLE_TYPES.gameOver);
     }
 
-    // Update particles with proper delta timing
-    state.particles = state.particles.filter((particle) => {
-      particle.x += particle.speedX * delta;
-      particle.y += particle.speedY * delta;
-      particle.life -= 0.02 * delta;
+    // state.particles = state.particles.filter((particle) => {
+    //   particle.x += particle.speedX * delta;
+    //   particle.y += particle.speedY * delta;
+    //   particle.life -= 0.02 * delta;
 
-      if (particle.life > 0) {
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.life * 3, 0, Math.PI * 2);
-        ctx.fillStyle = particle.color;
-        ctx.globalAlpha = particle.life;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        return true;
-      }
+    //   if (particle.life > 0) {
+    //     ctx.beginPath();
+    //     ctx.arc(particle.x, particle.y, particle.life * 3, 0, Math.PI * 2);
+    //     ctx.fillStyle = particle.color;
+    //     ctx.globalAlpha = particle.life;
+    //     ctx.fill();
+    //     ctx.globalAlpha = 1;
+    //     return true;
+    //   }
 
-      return false;
-    });
+    //   return false;
+    // });
 
     // Update power-ups with proper delta timing
-    state.powerUps = state.powerUps.filter((powerUp) => {
-      powerUp.y += powerUp.speed * delta;
+    // state.powerUps = state.powerUps.filter((powerUp) => {
+    //   powerUp.y += powerUp.speed * delta;
 
-      const isPowerUpInPaddleZone = powerUp.y > canvas.height - 30;
-      const isPowerUpAlignedWithPaddle = powerUp.x > state.paddleX && powerUp.x < state.paddleX + state.paddleWidth;
-      const isPowerUpCollected = isPowerUpInPaddleZone && isPowerUpAlignedWithPaddle;
+    //   const isPowerUpInPaddleZone = powerUp.y > canvas.height - 30;
+    //   const isPowerUpAlignedWithPaddle = powerUp.x > state.paddleX && powerUp.x < state.paddleX + state.paddleWidth;
+    //   const isPowerUpCollected = isPowerUpInPaddleZone && isPowerUpAlignedWithPaddle;
 
-      if (isPowerUpCollected) {
-        applyPowerUp(powerUp.type);
-        createParticles(powerUp.x, powerUp.y, PARTICLE_TYPES.powerUpCollect, powerUp.type);
-        return false;
-      }
+    //   if (isPowerUpCollected) {
+    //     applyPowerUp(powerUp.type);
+    //     createParticles(powerUp.x, powerUp.y, PARTICLE_TYPES.powerUpCollect, powerUp.type);
+    //     return false;
+    //   }
 
-      ctx.beginPath();
-      ctx.arc(powerUp.x, powerUp.y, 10, 0, Math.PI * 2);
-      ctx.fillStyle = powerUp.color;
-      ctx.fill();
+    //   ctx.beginPath();
+    //   ctx.arc(powerUp.x, powerUp.y, 10, 0, Math.PI * 2);
+    //   ctx.fillStyle = powerUp.color;
+    //   ctx.fill();
 
-      return powerUp.y < canvas.height;
-    });
+    //   return powerUp.y < canvas.height;
+    // });
 
     // Draw ball and paddle
     ctx.beginPath();
