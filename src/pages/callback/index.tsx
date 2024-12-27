@@ -12,7 +12,6 @@ const AuthCallback: FC = () => {
   const { setToken, setUser, setError } = useAuthStore();
 
   const code = searchParams.get("code");
-  console.log("code: ", code);
 
   const oauthError = searchParams.get("error");
 
