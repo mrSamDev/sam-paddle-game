@@ -4,3 +4,7 @@ export type LeaderboardItem = {
   avatarUrl: string;
   profileUrl: string;
 };
+
+export type LeaderboardResponse = {
+  leaderboard: LeaderboardItem[];
+};

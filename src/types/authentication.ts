@@ -1,11 +1,14 @@
-export interface User {
-  id: string;
+export interface BareUser {
   githubUsername: string;
   avatarUrl: string;
   url: string;
   profileUrl: string;
-  name: string;
   score: number;
+}
+
+export interface User extends BareUser {
+  id: string;
+  name: string;
   createdAt: Date;
   updatedAt: Date;
 }

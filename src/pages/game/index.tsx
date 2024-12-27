@@ -368,7 +368,7 @@ const CanvasGame = () => {
   }
 
   return (
-    <main className="flex-grow flex flex-col items-center justify-center p-4 pb-20">
+    <div className="flex-grow flex flex-col items-center justify-center p-4 pb-20">
       <div className="bg-muted rounded-lg shadow-md p-6 w-full max-w-3xl border border-main/10">
         <div className="flex justify-between items-center mb-6">
           <div className="space-y-2">
@@ -413,7 +413,7 @@ const CanvasGame = () => {
           <p>Press Space to pause/resume or try again after game over</p>
         </div>
       </div>
-    </main>
+    </div>
   );
 };
 

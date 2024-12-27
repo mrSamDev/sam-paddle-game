@@ -1,6 +1,6 @@
-import { PropsWithChildren, ReactElement } from "react";
+import React, { PropsWithChildren, ReactElement } from "react";
 import { useAuthStore } from "../../store/authentication";
-import { Card, CardContent } from "../ui/card";
+import { Card, CardContent } from "../ui/card/card";
 import { Github } from "lucide-react";
 
 interface AuthGuardProps extends PropsWithChildren {
@@ -31,7 +31,7 @@ const AuthGuard = ({ children, fallback }: AuthGuardProps) => {
                 <Github className="mr-2 h-5 w-5" />
                 Sign in with GitHub
               </button>
-              <p className="mt-4 text-sm text-gray-500">Your data will be handled according to our privacy policy.</p>
+              <p className="mt-4 text-sm text-white/50">Your data will be handled according to our privacy policy.</p>
             </div>
           </CardContent>
         </Card>

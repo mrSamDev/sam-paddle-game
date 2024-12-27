@@ -1,6 +1,6 @@
 import client from "./base";
-import { LeaderboardItem } from "../types/leaderboard";
+import { LeaderboardResponse } from "../types/leaderboard";
 export async function getLeaderBoard() {
-  const leaderboardlist = await client.get<LeaderboardItem[]>("leaderboard").json();
+  const leaderboardlist = await client.get<LeaderboardResponse>("leaderboard").json();
   return leaderboardlist;
 }

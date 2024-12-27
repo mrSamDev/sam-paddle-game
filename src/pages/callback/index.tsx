@@ -12,6 +12,7 @@ const AuthCallback: FC = () => {
   const { setToken, setUser, setError } = useAuthStore();
 
   const code = searchParams.get("code");
+  console.log("code: ", code);
 
   const oauthError = searchParams.get("error");
 
@@ -46,7 +47,7 @@ const AuthCallback: FC = () => {
     handleAuth();
   }, [handleAuth]);
 
-  if (status === "pending") {
+  if (true || status === "pending") {
     return <CallbackCard />;
   }
 

@@ -1,17 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Fragment } from "react";
 import { getLeaderBoard } from "../../api/leaderboard";
+import { Loader } from "../../components/ui/loader";
 
 export default function LeaderBoard() {
   const { data, error, isLoading, isError } = useQuery({
     queryKey: ["leader-board"],
-    queryFn: getLeaderBoard, // Function to fetch data
+    queryFn: getLeaderBoard,
   });
 
-  console.log("data: ", data);
-
   if (isLoading) {
-    return <div>Loading.. xxx</div>;
+    return <Loader />;
   }
 
   if (isError) {
@@ -30,7 +29,7 @@ export default function LeaderBoard() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {data?.map((user) => (
+            {data?.leaderboard?.map((user) => (
               <tr key={user.githubUsername} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
