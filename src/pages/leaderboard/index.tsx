@@ -1,18 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
 import { Fragment } from "react";
-import { getLeaderBoard } from "../../api/leaderboard";
+import { useGetLeaderBoard } from "../../hooks/use-leader-board";
 import { Loader } from "../../components/atoms/loader";
 
 export default function LeaderBoard() {
-  const { data, error, isLoading, isError } = useQuery({
-    queryKey: ["leader-board"],
-    queryFn: getLeaderBoard,
-  });
+  const { data, error, isLoading, isError } = useGetLeaderBoard();
 
   if (isLoading) {
     return <Loader />;
   }
 
+  //todo: better error
   if (isError) {
     return <div>Error: {error.message}</div>;
   }

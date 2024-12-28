@@ -43,6 +43,7 @@ const TwitchAuthCallback = () => {
     return <CallbackCard />;
   }
 
+  // needs to handle error
   return null;
 };
 
