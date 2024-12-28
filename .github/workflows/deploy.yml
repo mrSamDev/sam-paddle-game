@@ -18,7 +18,7 @@ jobs:
       - name: Setup PNPM
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
 
       - name: Setup NodeJS
         uses: actions/setup-node@v4
@@ -30,7 +30,7 @@ jobs:
         run: pnpm add -g netlify-cli@17.10.1
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Build project
         run: pnpm run build
