@@ -1,12 +1,15 @@
 import { Routes, Route } from "react-router";
 import { lazy, Suspense } from "react";
 import BaseLayout from "./layouts/base";
-import AuthGuard from "./components/molecules/sign-with/SignWith";
 import { PageCenterLoader } from "./components/atoms/loader";
+import { ProtectedRoute } from "./components/atoms/protected-route";
 
 const CanvasGame = lazy(() => import("./pages/game"));
 const LeaderBoard = lazy(() => import("./pages/leaderboard"));
 const Callback = lazy(() => import("./pages/callback"));
+const NotFound = lazy(() => import("./pages/404"));
+
+const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => <Suspense fallback={<PageCenterLoader />}>{children}</Suspense>;
 
 export default function App() {
   return (
@@ -15,27 +18,35 @@ export default function App() {
         <Route
           index
           element={
-            <Suspense fallback={<PageCenterLoader />}>
+            <SuspenseWrapper>
               <CanvasGame />
-            </Suspense>
+            </SuspenseWrapper>
           }
         />
         <Route
           path="leader-board"
           element={
-            <Suspense fallback={<PageCenterLoader />}>
-              <AuthGuard>
+            <SuspenseWrapper>
+              <ProtectedRoute>
                 <LeaderBoard />
-              </AuthGuard>
-            </Suspense>
+              </ProtectedRoute>
+            </SuspenseWrapper>
           }
         />
         <Route
           path="/:provider/callback"
           element={
-            <Suspense fallback={<PageCenterLoader />}>
+            <SuspenseWrapper>
               <Callback />
-            </Suspense>
+            </SuspenseWrapper>
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <SuspenseWrapper>
+              <NotFound />
+            </SuspenseWrapper>
           }
         />
       </Routes>

@@ -1,28 +1,16 @@
-import { FC, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authentication";
-import { validateGithubToken } from "../../api/authentication";
 import CallbackCard from "../../components/molecules/auth-callback/Callback";
-import { AuthResponse } from "../../types/authentication";
+import { useGithubAuth } from "../../hooks/use-github-auth";
 
-const TwitchAuthCallback: FC = () => {
+const TwitchAuthCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
   const { setToken, setUser, setError } = useAuthStore();
 
-  const { mutate: exchangeCode, status } = useMutation<AuthResponse, Error, string>({
-    mutationFn: validateGithubToken,
-    onSuccess: (data) => {
-      setToken(data.token);
-      setUser(data.user);
-      navigate("/");
-    },
-    onError: (error: Error) => {
-      setError(error.message);
-      navigate("/");
-    },
-  });
+  const { mutate: exchangeCode, status } = useGithubAuth();
 
   useEffect(() => {
     const code = searchParams.get("code");
@@ -35,7 +23,17 @@ const TwitchAuthCallback: FC = () => {
     }
 
     if (code) {
-      exchangeCode(code);
+      exchangeCode(code, {
+        onSuccess: (data) => {
+          setToken(data.token);
+          setUser(data.user);
+          navigate("/");
+        },
+        onError: (error: Error) => {
+          setError(error.message);
+          navigate("/");
+        },
+      });
     } else {
       navigate("/");
     }
