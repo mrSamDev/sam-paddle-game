@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { BASE_GAME_STATE, COLORS, FONTS, GAME_SETTINGS, PARTICLE_SETTINGS, PARTICLE_TYPES } from "../../data/config";
 import type { GameState, Particle, ParticleColors, ParticleEventType, PowerUp, PowerUpType } from "../../types";
+
 import { Gameheader } from "../../components/organisms/game-header";
 import { GameScene } from "../../components/organisms/game-scene";
 import { GameInfo } from "../../components/organisms/game-footer";
 import { GameMobileInfo } from "../../components/organisms/game-mobile-info";
+
+//hooks
+import useIsMobile from "../../hooks/use-ismobile";
 
 // Target 60 FPS
 const FRAME_TIME = 1000 / 60;
@@ -19,7 +23,8 @@ const CanvasGame = () => {
   const [currentScore, setCurrentScore] = useState(0);
   const [speedMultiplier, setSpeedMultiplier] = useState(GAME_SETTINGS.INITIAL_BALL_SPEED);
   const [paddleSpeedMultiplier, setPaddleSpeedMultiplier] = useState(GAME_SETTINGS.BASE_PADDLE_SPEED);
-  const [isMobile, setIsMobile] = useState(false);
+
+  const isMobile = useIsMobile(GAME_SETTINGS.MOBILE_BREAKPOINT);
 
   const requestRef = useRef<number>();
   const keysPressed = useRef<Set<string>>(new Set());
@@ -50,16 +55,6 @@ const CanvasGame = () => {
 
     requestRef.current = requestAnimationFrame(updateGame);
   }, [speedMultiplier]);
-
-  useEffect(() => {
-    const checkDevice = () => {
-      setIsMobile(window.innerWidth <= GAME_SETTINGS.MOBILE_BREAKPOINT);
-    };
-
-    checkDevice();
-    window.addEventListener("resize", checkDevice);
-    return () => window.removeEventListener("resize", checkDevice);
-  }, []);
 
   const handleSpeedChange = (multiplier: number) => {
     setSpeedMultiplier(multiplier);
@@ -272,6 +267,9 @@ const CanvasGame = () => {
     }
 
     if (isBallHittingPaddle) {
+      const newBallY = canvas.height - (GAME_SETTINGS.PADDLE_BOTTAM_DELTA + GAME_SETTINGS.PADDLE_HEIGHT) - state.ballSize - 1;
+
+      state.ballY = newBallY;
       state.ballSpeedY = -state.ballSpeedY;
       state.score += GAME_SETTINGS.SCORE_INCREMENT;
       setCurrentScore(state.score);
