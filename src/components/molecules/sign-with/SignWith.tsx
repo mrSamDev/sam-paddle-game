@@ -1,6 +1,6 @@
-import React, { PropsWithChildren, ReactElement } from "react";
-import { useAuthStore } from "../../store/authentication";
-import { Card, CardContent } from "../ui/card/card";
+import { PropsWithChildren, ReactElement } from "react";
+import { useAuthStore } from "../../../store/authentication";
+import { Card, CardContent } from "../../atoms/card/card";
 import { Github } from "lucide-react";
 
 interface AuthGuardProps extends PropsWithChildren {

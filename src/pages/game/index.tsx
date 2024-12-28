@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { BASE_GAME_STATE, COLORS, FONTS, GAME_SETTINGS, PARTICLE_SETTINGS, PARTICLE_TYPES } from "../../data/config";
 import type { GameState, Particle, ParticleColors, ParticleEventType, PowerUp, PowerUpType } from "../../types";
+import { Trophy } from "lucide-react";
 
 // Target 60 FPS
 const FRAME_TIME = 1000 / 60;
@@ -398,9 +399,21 @@ const CanvasGame = () => {
             </div>
           </div>
 
-          <div className="text-center">
-            <div className="text-4xl font-bold text-main">{currentScore}</div>
-            <div className="text-sm text-main/60">SCORE</div>
+          <div className="flex flex-col items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-main">{currentScore}</div>
+              <div className="text-sm text-main/60">SCORE</div>
+            </div>
+
+            {/* {isAuthenticated && currentScore > 0 && ( */}
+            <button
+              // onClick={handleSaveScore}
+              className="flex items-center gap-2 px-4 py-2 bg-main/10 hover:bg-main/20 rounded-lg text-main transition-colors"
+            >
+              <Trophy className="w-4 h-4" />
+              <span className="text-sm">Save Score</span>
+            </button>
+            {/* )} */}
           </div>
         </div>
 

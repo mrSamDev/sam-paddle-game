@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router";
 import { lazy, Suspense } from "react";
 import BaseLayout from "./layouts/base";
-import AuthGuard from "./components/auth/SignWith";
-import { PageCenterLoader } from "./components/ui/loader";
+import AuthGuard from "./components/molecules/sign-with/SignWith";
+import { PageCenterLoader } from "./components/atoms/loader";
 
 const CanvasGame = lazy(() => import("./pages/game"));
 const LeaderBoard = lazy(() => import("./pages/leaderboard"));

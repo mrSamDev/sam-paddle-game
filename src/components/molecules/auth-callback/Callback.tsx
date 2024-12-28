@@ -1,4 +1,4 @@
-import { Loader } from "../ui/loader";
+import { Loader } from "../../atoms/loader";
 
 export default function Callback() {
   return (

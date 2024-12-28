@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import { Header } from "../../components/ui/header";
+import { Header } from "../../components/molecules/header";
 
 export default function BaseLayout({ children }: PropsWithChildren) {
   return (

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Fragment } from "react";
 import { getLeaderBoard } from "../../api/leaderboard";
-import { Loader } from "../../components/ui/loader";
+import { Loader } from "../../components/atoms/loader";
 
 export default function LeaderBoard() {
   const { data, error, isLoading, isError } = useQuery({
