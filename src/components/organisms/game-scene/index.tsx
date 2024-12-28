@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 import { GAME_SETTINGS } from "../../../data/config";
 
 type Props = {

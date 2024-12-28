@@ -16,10 +16,10 @@ const FRAME_TIME = 1000 / 60;
 const CanvasGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-  const [gameStatus, setGameStatus] = useState({
-    start: false,
-    isFirstTime: false,
-  });
+  // const [gameStatus, setGameStatus] = useState({
+  //   start: false,
+  //   isFirstTime: false,
+  // });
   const [currentScore, setCurrentScore] = useState(0);
   const [speedMultiplier, setSpeedMultiplier] = useState(GAME_SETTINGS.INITIAL_BALL_SPEED);
   const [paddleSpeedMultiplier, setPaddleSpeedMultiplier] = useState(GAME_SETTINGS.BASE_PADDLE_SPEED);
