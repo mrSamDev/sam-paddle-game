@@ -1,34 +1,21 @@
-import { FC, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authentication";
-import { validateGithubToken } from "../../api/authentication";
-import CallbackCard from "../../components/auth/Callback";
-import { AuthResponse } from "../../types/authentication";
+import CallbackCard from "../../components/molecules/auth-callback/Callback";
+import { useGithubAuth } from "../../hooks/use-github-auth";
 
-const AuthCallback: FC = () => {
+const TwitchAuthCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
   const { setToken, setUser, setError } = useAuthStore();
 
-  const code = searchParams.get("code");
+  const { mutate: exchangeCode, status } = useGithubAuth();
 
-  const oauthError = searchParams.get("error");
+  useEffect(() => {
+    const code = searchParams.get("code");
+    const oauthError = searchParams.get("error");
 
-  const { mutate: exchangeCode, status } = useMutation<AuthResponse, Error, string>({
-    mutationFn: validateGithubToken,
-    onSuccess: (data) => {
-      setToken(data.token);
-      setUser(data.user);
-      navigate("/leader-board");
-    },
-    onError: (error: Error) => {
-      setError(error.message);
-      navigate("/");
-    },
-  });
-
-  const handleAuth = useCallback(() => {
     if (oauthError) {
       setError(oauthError);
       navigate("/");
@@ -36,21 +23,28 @@ const AuthCallback: FC = () => {
     }
 
     if (code) {
-      exchangeCode(code);
+      exchangeCode(code, {
+        onSuccess: (data) => {
+          setToken(data.token);
+          setUser(data.user);
+          navigate("/");
+        },
+        onError: (error: Error) => {
+          setError(error.message);
+          navigate("/");
+        },
+      });
     } else {
       navigate("/");
     }
-  }, [code, oauthError, navigate, setError, exchangeCode]);
-
-  useEffect(() => {
-    handleAuth();
-  }, [handleAuth]);
+  }, []);
 
   if (status === "pending") {
     return <CallbackCard />;
   }
 
+  // needs to handle error
   return null;
 };
 
-export default AuthCallback;
+export default TwitchAuthCallback;

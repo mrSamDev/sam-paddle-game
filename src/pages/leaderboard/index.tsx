@@ -1,19 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
 import { Fragment } from "react";
-import { getLeaderBoard } from "../../api/leaderboard";
+import { useGetLeaderBoard } from "../../hooks/use-leader-board";
+import { Loader } from "../../components/atoms/loader";
 
 export default function LeaderBoard() {
-  const { data, error, isLoading, isError } = useQuery({
-    queryKey: ["leader-board"],
-    queryFn: getLeaderBoard, // Function to fetch data
-  });
-
-  console.log("data: ", data);
+  const { data, error, isLoading, isError } = useGetLeaderBoard();
 
   if (isLoading) {
-    return <div>Loading.. xxx</div>;
+    return <Loader />;
   }
 
+  //todo: better error
   if (isError) {
     return <div>Error: {error.message}</div>;
   }
@@ -30,7 +26,7 @@ export default function LeaderBoard() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {data?.map((user) => (
+            {data?.leaderboard?.map((user) => (
               <tr key={user.githubUsername} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
