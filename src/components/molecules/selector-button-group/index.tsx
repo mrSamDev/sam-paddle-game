@@ -1,4 +1,4 @@
-import { SelectorButton } from "../../atoms/selector-button";
+import { SelectorButton } from "../selector-button";
 
 type SelectorButtonGroupProps<T extends string | number> = {
   values: T[];

@@ -1,10 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { SaveScore } from "../types/leaderboard";
 import { updateScore } from "../api/leaderboard";
-import { useToast } from "./use-toast";
+import { useAuthStore } from "../store/authentication";
+import { User } from "@/types/authentication";
 
-export function useSaveScore() {
-  const { toast } = useToast();
+export function useScore() {
+  const { setUser, user } = useAuthStore();
 
   const mutation = useMutation<SaveScore, Error, string>({
     mutationFn: updateScore,
@@ -12,20 +13,17 @@ export function useSaveScore() {
 
   const saveScore = async (score: number) => {
     try {
-      await mutation.mutateAsync(score.toString());
-
-      toast({
-        title: "Scheduled: Catch up",
-        description: "Friday, February 10, 2023 at 5:57 PM",
-      });
+      const data = await mutation.mutateAsync(score.toString());
+      const newUser = { ...user, ...data.user } as User;
+      setUser(newUser);
     } catch (error) {
-      console.error("Save score error:", error);
       throw error;
     }
   };
 
   return {
     saveScore,
-    isLoading: mutation.isPending,
+    isSavingScore: mutation.isPending,
+    score: user?.score || 0,
   };
 }

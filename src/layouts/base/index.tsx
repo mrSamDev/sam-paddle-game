@@ -2,10 +2,14 @@ import { PropsWithChildren } from "react";
 import { Header } from "../../components/organisms/header";
 import { Toaster } from "../../components/atoms/toast/toaster";
 
-export default function BaseLayout({ children }: PropsWithChildren) {
+type Props = {
+  basicLayout?: boolean;
+} & PropsWithChildren;
+
+export default function BaseLayout({ children, basicLayout }: Props) {
   return (
     <div className="min-h-screen bg-main flex flex-col">
-      <Header />
+      <Header basicLayout={basicLayout} />
       <Toaster />
       <main className="p-8 md:p-20">{children}</main>
       <footer className="fixed bottom-0 left-0 right-0 bg-muted border-t border-main/10 py-3 px-4">

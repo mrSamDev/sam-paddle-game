@@ -5,7 +5,7 @@ import { PageCenterLoader } from "./components/atoms/loader";
 import { ProtectedRoute } from "./components/atoms/protected-route";
 
 const CanvasGame = lazy(() => import("./pages/game"));
-const LeaderBoard = lazy(() => import("./pages/leaderboard"));
+const LeaderBoard = lazy(() => import("./pages/coming-soon"));
 const Callback = lazy(() => import("./pages/callback"));
 const NotFound = lazy(() => import("./pages/404"));
 
@@ -13,43 +13,49 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => <Suspen
 
 export default function App() {
   return (
-    <BaseLayout>
-      <Routes>
-        <Route
-          index
-          element={
-            <SuspenseWrapper>
+    <Routes>
+      <Route
+        index
+        element={
+          <SuspenseWrapper>
+            <BaseLayout>
               <CanvasGame />
-            </SuspenseWrapper>
-          }
-        />
-        <Route
-          path="leader-board"
-          element={
-            <SuspenseWrapper>
-              <ProtectedRoute>
+            </BaseLayout>
+          </SuspenseWrapper>
+        }
+      />
+      <Route
+        path="leader-board"
+        element={
+          <SuspenseWrapper>
+            <ProtectedRoute>
+              <BaseLayout>
                 <LeaderBoard />
-              </ProtectedRoute>
-            </SuspenseWrapper>
-          }
-        />
-        <Route
-          path="/:provider/callback"
-          element={
-            <SuspenseWrapper>
+              </BaseLayout>
+            </ProtectedRoute>
+          </SuspenseWrapper>
+        }
+      />
+      <Route
+        path="/:provider/callback"
+        element={
+          <SuspenseWrapper>
+            <BaseLayout basicLayout>
               <Callback />
-            </SuspenseWrapper>
-          }
-        />
-        <Route
-          path="*"
-          element={
-            <SuspenseWrapper>
+            </BaseLayout>
+          </SuspenseWrapper>
+        }
+      />
+      <Route
+        path="*"
+        element={
+          <SuspenseWrapper>
+            <BaseLayout>
               <NotFound />
-            </SuspenseWrapper>
-          }
-        />
-      </Routes>
-    </BaseLayout>
+            </BaseLayout>
+          </SuspenseWrapper>
+        }
+      />
+    </Routes>
   );
 }

@@ -1,5 +1,5 @@
 import { useAuth } from "../../../hooks/use-auth";
-import { useSaveScore } from "../../../hooks/use-score";
+import { useScore } from "../../../hooks/use-score";
 import { Button } from "../../atoms/button/button";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 
 export function ScoreDisplay({ currentScore }: Props) {
   const { isAuthenticated } = useAuth();
-  const { saveScore } = useSaveScore();
+  const { isSavingScore, saveScore } = useScore();
 
   const onClick = () => {
     saveScore(currentScore);
@@ -17,7 +17,7 @@ export function ScoreDisplay({ currentScore }: Props) {
   return (
     <div className="w-full md:w-auto">
       {isAuthenticated ? (
-        <Button className="w-full md:w-auto" onClick={onClick}>
+        <Button isLoading={isSavingScore} className="w-full md:w-auto" onClick={onClick}>
           <div className="flex flex-col items-center">
             <span className="text-2xl font-bold">{currentScore}</span>
             <span className="text-xs opacity-60">SAVE SCORE</span>
