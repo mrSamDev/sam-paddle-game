@@ -1,0 +1,41 @@
+name: Deploy Production Website
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install Netlify CLI
+        run: pnpm add -g netlify-cli@17.10.1
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Deploy to Netlify Production
+        run: |
+          netlify deploy \
+            --dir="dist" \
+            --site="${{ secrets.NETLIFY_SITE_ID }}" \
+            --auth="${{ secrets.NETLIFY_API_TOKEN }}" \
+            --prod
