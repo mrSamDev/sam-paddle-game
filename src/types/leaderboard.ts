@@ -1,3 +1,5 @@
+import { BareUser } from "./authentication";
+
 export type LeaderboardItem = {
   githubUsername: string;
   score: number;
@@ -7,4 +9,8 @@ export type LeaderboardItem = {
 
 export type LeaderboardResponse = {
   leaderboard: LeaderboardItem[];
+};
+
+export type SaveScore = {
+  user: BareUser;
 };
