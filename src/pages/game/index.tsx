@@ -2,16 +2,27 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { BASE_GAME_STATE, COLORS, FONTS, GAME_SETTINGS, PARTICLE_SETTINGS, PARTICLE_TYPES } from "../../data/config";
 import type { GameState, Particle, ParticleColors, ParticleEventType, PowerUp, PowerUpType } from "../../types";
 
+import { Gameheader } from "../../components/organisms/game-header";
+import { GameScene } from "../../components/organisms/game-scene";
+import { GameInfo } from "../../components/organisms/game-footer";
+import { GameMobileInfo } from "../../components/organisms/game-mobile-info";
+
+//hooks
+import useIsMobile from "../../hooks/use-ismobile";
+
 // Target 60 FPS
 const FRAME_TIME = 1000 / 60;
 
 const CanvasGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const [isGameStarted, setStartGame] = useState(false);
   const [currentScore, setCurrentScore] = useState(0);
   const [speedMultiplier, setSpeedMultiplier] = useState(GAME_SETTINGS.INITIAL_BALL_SPEED);
   const [paddleSpeedMultiplier, setPaddleSpeedMultiplier] = useState(GAME_SETTINGS.BASE_PADDLE_SPEED);
-  const [isMobile, setIsMobile] = useState(false);
+
+  const isMobile = useIsMobile(GAME_SETTINGS.MOBILE_BREAKPOINT);
+
   const requestRef = useRef<number>();
   const keysPressed = useRef<Set<string>>(new Set());
   const lastFrameTimeRef = useRef<number>(0);
@@ -41,16 +52,6 @@ const CanvasGame = () => {
 
     requestRef.current = requestAnimationFrame(updateGame);
   }, [speedMultiplier]);
-
-  useEffect(() => {
-    const checkDevice = () => {
-      setIsMobile(window.innerWidth <= GAME_SETTINGS.MOBILE_BREAKPOINT);
-    };
-
-    checkDevice();
-    window.addEventListener("resize", checkDevice);
-    return () => window.removeEventListener("resize", checkDevice);
-  }, []);
 
   const handleSpeedChange = (multiplier: number) => {
     setSpeedMultiplier(multiplier);
@@ -263,6 +264,9 @@ const CanvasGame = () => {
     }
 
     if (isBallHittingPaddle) {
+      const newBallY = canvas.height - (GAME_SETTINGS.PADDLE_BOTTAM_DELTA + GAME_SETTINGS.PADDLE_HEIGHT) - state.ballSize - 1;
+
+      state.ballY = newBallY;
       state.ballSpeedY = -state.ballSpeedY;
       state.score += GAME_SETTINGS.SCORE_INCREMENT;
       setCurrentScore(state.score);
@@ -332,7 +336,7 @@ const CanvasGame = () => {
   }, [createParticles, spawnPowerUp, applyPowerUp, updatePaddlePosition]);
 
   useEffect(() => {
-    if (!isMobile) {
+    if (!isMobile && isGameStarted) {
       const canvas = canvasRef.current;
       if (canvas) ctxRef.current = canvas?.getContext("2d");
       lastFrameTimeRef.current = performance.now();
@@ -344,7 +348,7 @@ const CanvasGame = () => {
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [updateGame, isMobile]);
+  }, [isGameStarted, updateGame, isMobile]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -355,65 +359,30 @@ const CanvasGame = () => {
     };
   }, [handleKeyDown, handleKeyUp]);
 
+  const handleStartGame = () => {
+    setStartGame((prev) => !prev);
+  };
+
   if (isMobile) {
-    return (
-      <div className="bg-main flex items-center justify-center p-4">
-        <div className="bg-muted rounded-lg shadow-md p-6 text-center">
-          <h1 className="text-2xl font-bold text-main mb-4">Desktop Only Game</h1>
-          <p className="text-main">Please open this game on a desktop device for the best experience.</p>
-          <p className="text-main mt-2">The game requires keyboard controls to play.</p>
-        </div>
-      </div>
-    );
+    return <GameMobileInfo />;
   }
 
   return (
-    <main className="flex-grow flex flex-col items-center justify-center p-4 pb-20">
+    <div className="flex-grow flex flex-col items-center justify-center p-4 pb-20">
       <div className="bg-muted rounded-lg shadow-md p-6 w-full max-w-3xl border border-main/10">
-        <div className="flex justify-between items-center mb-6">
-          <div className="space-y-2">
-            <div className="flex gap-2 items-center">
-              <span className="text-main text-sm">Ball Speed:</span>
-              {GAME_SETTINGS.BALL_SPEED_OPTIONS.map((speed) => (
-                <button
-                  key={speed}
-                  onClick={() => handleSpeedChange(speed)}
-                  className={`px-3 py-1 rounded border ${speedMultiplier === speed ? "bg-main text-zinc-100 border-main" : "bg-muted text-main border-main/20 hover:border-main/40"}`}
-                >
-                  {speed}x
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2 items-center">
-              <span className="text-main text-sm">Paddle Speed:</span>
-              {GAME_SETTINGS.PADDLE_SPEED_OPTIONS.map((speed) => (
-                <button
-                  key={speed}
-                  onClick={() => handlePaddleSpeedChange(speed)}
-                  className={`px-3 py-1 rounded border ${paddleSpeedMultiplier === speed ? "bg-main text-zinc-100 border-main" : "bg-muted text-main border-main/20 hover:border-main/40"}`}
-                >
-                  {speed}x
-                </button>
-              ))}
-            </div>
-          </div>
+        <Gameheader
+          speedMultiplier={speedMultiplier}
+          paddleSpeedMultiplier={paddleSpeedMultiplier}
+          currentScore={currentScore}
+          handleSpeedChange={handleSpeedChange}
+          handlePaddleSpeedChange={handlePaddleSpeedChange}
+        />
 
-          <div className="text-center">
-            <div className="text-4xl font-bold text-main">{currentScore}</div>
-            <div className="text-sm text-main/60">SCORE</div>
-          </div>
-        </div>
+        <GameScene ref={canvasRef} isEnabled={isGameStarted} handleEnable={handleStartGame} />
 
-        <div className="bg-main rounded-lg overflow-hidden border border-main/10">
-          <canvas tabIndex={0} ref={canvasRef} width={GAME_SETTINGS.CANVAS.WIDTH} height={GAME_SETTINGS.CANVAS.HEIGHT} className="w-full" />
-        </div>
-
-        <div className="mt-4 space-y-2 text-center text-main prose prose-sijo">
-          <p>Use left and right arrow keys to move the paddle</p>
-          <p>Press Space to pause/resume or try again after game over</p>
-        </div>
+        <GameInfo />
       </div>
-    </main>
+    </div>
   );
 };
 

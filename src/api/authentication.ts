@@ -1,4 +1,4 @@
-import { AuthResponse } from "../types/authentication";
+import { AuthResponse, BareUser } from "../types/authentication";
 import client from "./base";
 
 interface CallbackResponse extends AuthResponse {
@@ -25,3 +25,8 @@ export const validateGithubToken = async (code: string): Promise<CallbackRespons
     throw new Error(error instanceof Error ? error.message : "Failed to exchange code for token");
   }
 };
+
+export async function getUser() {
+  const user = await client.get<BareUser>("auth/user").json();
+  return user;
+}

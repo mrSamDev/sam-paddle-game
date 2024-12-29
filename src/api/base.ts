@@ -4,13 +4,13 @@ import { useAuthStore } from "../store/authentication";
 
 const getToken = () => {
   const token = useAuthStore.getState().token;
-  console.log("token: ", token);
   if (!token) return "";
   return `Bearer ${token}`;
 };
 
 const api = ky.create({
   prefixUrl: base.API_BASE_URL + "/",
+  retry: 0,
   hooks: {
     beforeRequest: [
       (request) => {

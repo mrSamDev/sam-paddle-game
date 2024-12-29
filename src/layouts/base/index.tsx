@@ -1,20 +1,17 @@
 import { PropsWithChildren } from "react";
+import { Header } from "../../components/organisms/header";
+import { Toaster } from "../../components/atoms/toast/toaster";
 
-export default function BaseLayout({ children }: PropsWithChildren) {
+type Props = {
+  basicLayout?: boolean;
+} & PropsWithChildren;
+
+export default function BaseLayout({ children, basicLayout }: Props) {
   return (
     <div className="min-h-screen bg-main flex flex-col">
-      <header className="w-full py-6 border-b border-main/10">
-        <div className="container mx-auto max-w-3xl px-4 text-center">
-          <h1 className="text-4xl font-bold text-main mb-2">Paddle Game</h1>
-          <p className="text-main/80">
-            by{" "}
-            <a href="https://github.com/mrSamDev" target="_blank" rel="noopener noreferrer" className="hover:text-main hover:underline underline-offset-2">
-              Sijo Sam
-            </a>
-          </p>
-        </div>
-      </header>
-      {children}
+      <Header basicLayout={basicLayout} />
+      <Toaster />
+      <main className="p-8 md:p-20">{children}</main>
       <footer className="fixed bottom-0 left-0 right-0 bg-muted border-t border-main/10 py-3 px-4">
         <div className="container mx-auto max-w-3xl flex items-center justify-between text-main/80">
           <span className="text-sm">An experiment to learn Canvas</span>
