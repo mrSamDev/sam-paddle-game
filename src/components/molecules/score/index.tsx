@@ -8,6 +8,7 @@ type Props = {
 
 export function ScoreDisplay({ currentScore }: Props) {
   const { isAuthenticated } = useAuth();
+  console.log("isAuthenticated: ", isAuthenticated);
   const { isSavingScore, saveScore } = useScore();
 
   const onClick = () => {

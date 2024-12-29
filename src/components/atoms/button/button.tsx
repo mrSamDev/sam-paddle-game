@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { BaseButtonProps, BaseButton } from "./base";
+import { AnchorButton, AnchorButtonProps } from "./anchor-button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../../lib/utils";
 
@@ -21,21 +22,44 @@ const buttonVariants = cva("inline-flex items-center justify-center gap-2 rounde
   },
 });
 
-interface ButtonProps extends Omit<BaseButtonProps, "className">, VariantProps<typeof buttonVariants> {
+type ButtonBaseProps = {
+  disabled?: boolean;
   icon?: LucideIcon;
   className?: string;
   isLoading?: boolean;
-}
+  variant?: VariantProps<typeof buttonVariants>["variant"];
+  fullWidth?: VariantProps<typeof buttonVariants>["fullWidth"];
+};
 
-export const Button = ({ children, isLoading, icon: Icon, variant, fullWidth, className = "", disabled, ...props }: ButtonProps) => {
-  return (
-    <BaseButton
-      className={cn(buttonVariants({ variant, fullWidth }), "active:scale-[0.98] transition-transform disabled:cursor-not-allowed disabled:active:scale-100", className)}
-      disabled={disabled || isLoading}
-      {...props}
-    >
+type ButtonAsButtonProps = ButtonBaseProps &
+  Omit<BaseButtonProps, "className"> & {
+    as?: "button";
+  };
+
+type ButtonAsAnchorProps = ButtonBaseProps &
+  Omit<AnchorButtonProps, "className"> & {
+    as: "a";
+  };
+
+type ButtonProps = ButtonAsButtonProps | ButtonAsAnchorProps;
+
+export const Button = ({ children, isLoading, icon: Icon, variant, fullWidth, className = "", disabled, as = "button", ...props }: ButtonProps) => {
+  const commonProps = {
+    className: cn(buttonVariants({ variant, fullWidth }), "active:scale-[0.98] transition-transform disabled:cursor-not-allowed disabled:active:scale-100", className),
+    disabled: disabled || isLoading,
+    ...props,
+  };
+
+  const content = (
+    <>
       {Icon && <Icon className="w-5 h-5" />}
       {children}
-    </BaseButton>
+    </>
   );
+
+  if (as === "a") {
+    return <AnchorButton {...(commonProps as any)}>{content}</AnchorButton>;
+  }
+
+  return <BaseButton {...(commonProps as BaseButtonProps)}>{content}</BaseButton>;
 };

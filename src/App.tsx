@@ -4,58 +4,42 @@ import BaseLayout from "./layouts/base";
 import { PageCenterLoader } from "./components/atoms/loader";
 import { ProtectedRoute } from "./components/atoms/protected-route";
 
-const CanvasGame = lazy(() => import("./pages/game"));
-const LeaderBoard = lazy(() => import("./pages/coming-soon"));
-const Callback = lazy(() => import("./pages/callback"));
-const NotFound = lazy(() => import("./pages/404"));
+const pages = {
+  CanvasGame: lazy(() => import("./pages/game")),
+  LeaderBoard: lazy(() => import("./pages/coming-soon")),
+  Callback: lazy(() => import("./pages/callback")),
+  NotFound: lazy(() => import("./pages/404")),
+};
 
-const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => <Suspense fallback={<PageCenterLoader />}>{children}</Suspense>;
+function App() {
+  const withSuspense = (Component: React.ComponentType, isProtected = false, basicLayout = false) => (
+    <Suspense
+      fallback={
+        <BaseLayout basicLayout>
+          <PageCenterLoader />
+        </BaseLayout>
+      }
+    >
+      <BaseLayout basicLayout={basicLayout}>
+        {isProtected ? (
+          <ProtectedRoute>
+            <Component />
+          </ProtectedRoute>
+        ) : (
+          <Component />
+        )}
+      </BaseLayout>
+    </Suspense>
+  );
 
-export default function App() {
   return (
     <Routes>
-      <Route
-        index
-        element={
-          <SuspenseWrapper>
-            <BaseLayout>
-              <CanvasGame />
-            </BaseLayout>
-          </SuspenseWrapper>
-        }
-      />
-      <Route
-        path="leader-board"
-        element={
-          <SuspenseWrapper>
-            <ProtectedRoute>
-              <BaseLayout>
-                <LeaderBoard />
-              </BaseLayout>
-            </ProtectedRoute>
-          </SuspenseWrapper>
-        }
-      />
-      <Route
-        path="/:provider/callback"
-        element={
-          <SuspenseWrapper>
-            <BaseLayout basicLayout>
-              <Callback />
-            </BaseLayout>
-          </SuspenseWrapper>
-        }
-      />
-      <Route
-        path="*"
-        element={
-          <SuspenseWrapper>
-            <BaseLayout>
-              <NotFound />
-            </BaseLayout>
-          </SuspenseWrapper>
-        }
-      />
+      <Route index element={withSuspense(pages.CanvasGame)} />
+      <Route path="leader-board" element={withSuspense(pages.LeaderBoard, true)} />
+      <Route path="/:provider/callback" element={withSuspense(pages.Callback, false, true)} />
+      <Route path="*" element={withSuspense(pages.NotFound)} />
     </Routes>
   );
 }
+
+export default App;
