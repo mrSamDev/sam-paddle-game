@@ -1,4 +1,4 @@
-import { GithubIcon, Rss, NewspaperIcon } from "lucide-react";
+import { GithubIcon, NewspaperIcon } from "lucide-react";
 import { Button } from "../../atoms/button/button";
 
 export function Footer() {
