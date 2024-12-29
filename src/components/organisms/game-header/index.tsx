@@ -16,7 +16,7 @@ export const Gameheader = (props: Props) => {
     <div className="flex justify-between items-center mb-6">
       <div className="space-y-2">
         <SelectorButtonGroup label="Ball Speed:" values={GAME_SETTINGS.BALL_SPEED_OPTIONS} selectedValue={speedMultiplier} onClick={handleSpeedChange} />
-        <SelectorButtonGroup label="Paddle Speed:" values={GAME_SETTINGS.BALL_SPEED_OPTIONS} selectedValue={paddleSpeedMultiplier} onClick={handlePaddleSpeedChange} />
+        <SelectorButtonGroup label="Paddle Speed:" values={GAME_SETTINGS.PADDLE_SPEED_OPTIONS} selectedValue={paddleSpeedMultiplier} onClick={handlePaddleSpeedChange} />
       </div>
 
       <ScoreDisplay currentScore={currentScore} />

@@ -1,16 +1,15 @@
 import React from "react";
 import { Link } from "react-router";
 import { Avatar } from "../../atoms/avatar";
-import { LogoutButton } from "../../atoms/logout-button";
+import { LogoutButton } from "../logout-button";
 import { BareUser } from "../../../types/authentication";
 
 type UserInfoProps = {
   user?: BareUser;
   showLeaderBoardUrl: boolean;
-  onLogout: () => void;
 };
 
-export const UserInfo: React.FC<UserInfoProps> = ({ user, showLeaderBoardUrl, onLogout }) => (
+export const UserInfo: React.FC<UserInfoProps> = ({ user, showLeaderBoardUrl }) => (
   <div className="flex items-center gap-3 md:gap-4 md:ml-auto">
     <div className="text-center md:text-right">
       <p className="font-medium text-main text-sm md:text-base">{user?.githubUsername}</p>
@@ -22,6 +21,6 @@ export const UserInfo: React.FC<UserInfoProps> = ({ user, showLeaderBoardUrl, on
       )}
     </div>
     <Avatar size="md" src={user?.avatarUrl || ""} alt={user?.githubUsername || ""} />
-    <LogoutButton onClick={onLogout} />
+    <LogoutButton />
   </div>
 );

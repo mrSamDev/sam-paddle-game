@@ -16,10 +16,10 @@ const FRAME_TIME = 1000 / 60;
 const CanvasGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-  // const [gameStatus, setGameStatus] = useState({
-  //   start: false,
-  //   isFirstTime: false,
-  // });
+  const [gameStatus, setGameStatus] = useState({
+    start: false,
+    isFirstTime: false,
+  });
   const [currentScore, setCurrentScore] = useState(0);
   const [speedMultiplier, setSpeedMultiplier] = useState(GAME_SETTINGS.INITIAL_BALL_SPEED);
   const [paddleSpeedMultiplier, setPaddleSpeedMultiplier] = useState(GAME_SETTINGS.BASE_PADDLE_SPEED);
@@ -338,8 +338,10 @@ const CanvasGame = () => {
     requestRef.current = requestAnimationFrame(updateGame);
   }, [createParticles, spawnPowerUp, applyPowerUp, updatePaddlePosition]);
 
+  const startGame = gameStatus.start;
+
   useEffect(() => {
-    if (!isMobile) {
+    if (!isMobile && startGame) {
       const canvas = canvasRef.current;
       if (canvas) ctxRef.current = canvas?.getContext("2d");
       lastFrameTimeRef.current = performance.now();
@@ -351,7 +353,7 @@ const CanvasGame = () => {
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [updateGame, isMobile]);
+  }, [startGame, updateGame, isMobile]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -377,7 +379,7 @@ const CanvasGame = () => {
           handlePaddleSpeedChange={handlePaddleSpeedChange}
         />
 
-        <GameScene ref={canvasRef} />
+        <GameScene ref={canvasRef} isEnabled={startGame} />
 
         <GameInfo />
       </div>

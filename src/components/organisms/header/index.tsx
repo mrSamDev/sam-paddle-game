@@ -1,13 +1,13 @@
 import { useLocation } from "react-router";
 import { UserInfo } from "../../molecules/user-info";
-import { LoginButton } from "../../atoms/login-button";
+import { LoginButton } from "../../molecules/login-button";
 import { CreatorInfo } from "../../atoms/creator-info";
 import { useAuth } from "../../../hooks/use-auth";
 import { useUser } from "../../../hooks/use-user";
 
 export function Header() {
   const location = useLocation();
-  const { token, logout, login } = useAuth();
+  const { token } = useAuth();
   const { data: user, isLoading } = useUser({ enabled: !!token });
 
   const isAuthentcatedUser = Boolean(!isLoading && user);
@@ -19,7 +19,7 @@ export function Header() {
         <div className="flex flex-col md:flex-row items-center gap-4">
           <CreatorInfo title="Paddle Game" creatorName="Sijo Sam" creatorUrl="https://github.com/mrSamDev" />
 
-          {isAuthentcatedUser ? <UserInfo user={user} showLeaderBoardUrl={showLeaderBoardurl} onLogout={logout} /> : <LoginButton className="md:ml-auto" onLogin={login} />}
+          {isAuthentcatedUser ? <UserInfo user={user} showLeaderBoardUrl={showLeaderBoardurl} /> : <LoginButton className="md:ml-auto" />}
         </div>
       </div>
     </header>
